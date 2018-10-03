@@ -1,0 +1,26 @@
+{% extends 'smartdiabetes/base.html' %}
+{% block title %}
+    <title>Menu</title>
+{% endblock %}
+
+{% block content %}
+    <h3>Twoje posiłki</h3>
+    {% for item in menu %}
+        <p>
+        <h4>{{ item.name }}</h4>
+        <div class="container-fluid">
+            {% if item.carbo_grams is not None %}
+                Węglowodany: {{ item.carbo_grams }}<br>
+            {% endif %}
+            {% if item.protein_grams is not None %}
+                Białka: {{ item.protein_grams }}<br>
+            {% endif %}
+            {% if item.fat_grams is not None %}
+                Tłuszcze: {{ item.fat_grams }}<br>
+            {% endif %}
+            WW: {{ item.ww }}<br>
+            WBT: {{ item.wbt }}<br>
+        </div>
+        </p>
+    {% endfor %}
+{% endblock %}

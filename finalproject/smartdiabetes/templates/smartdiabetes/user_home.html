@@ -1,0 +1,70 @@
+{% extends 'smartdiabetes/base.html' %}
+
+{% block content %}
+    <h2>{{ msg }}</h2>
+    {% if user.is_authenticated %}
+        <h2>Dane użytkownika {{ user }}</h2>
+        Imię: {{ user.first_name }}<br>
+        Nazwisko: {{ user.last_name }}<br>
+        Email: {{ user.email }}<br>
+        Adres: {{ user.address_city }}, {{ user.address_street }} {{ user.address_no }}<br>
+        Płeć: {{ user.get_sex_display }}<br>
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'update-profile' %}" role="button">Modyfikuj</a><br>
+        <a href="{% url 'update-action' %}">Długość działania insuliny: </a>{{ insulin_action.insulin_in_action }}
+
+        <p>
+        <h3>Przelicznik <a class="btn btn-outline-secondary btn-sm" href="{% url 'update-ratio' %}">Modyfikuj</a></h3>
+
+        <table>
+            <tr>
+                <th colspan="2">Przedział czasu</th>
+                <th>Przelicznik</th>
+            </tr>
+            {% for item in insulin_ration %}
+                <tr>
+                    <td>{{ item.start_time }}</td>
+                    <td>{{ item.end_time }}</td>
+                    <td>{{ item.insulin_ratio }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        </p>
+
+        <p>
+        <h3>Wrażliwość <a class="btn btn-outline-secondary btn-sm" href="{% url 'update-sensitivity' %}">Modyfikuj</a></h3>
+        <table>
+            <tr>
+                <th colspan="2">Przedział czasu</th>
+                <th>Wrażliwość</th>
+            </tr>
+            {% for item in insulin_sensitivity %}
+                <tr>
+                    <td>{{ item.start_time }}</td>
+                    <td>{{ item.end_time }}</td>
+                    <td>{{ item.insulin_sensitivity }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        </p>
+
+        <p>
+        <h3>Zakres docelowy <a class="btn btn-outline-secondary btn-sm" href="{% url 'update-targets' %}">Modyfikuj</a></h3>
+        <table>
+            <tr>
+                <th colspan="2">Przedział czasu</th>
+                <th colspan="2">Docelowa glikemia</th>
+
+            </tr>
+            {% for item in targeted_levels %}
+                <tr>
+                    <td>{{ item.start_time }}</td>
+                    <td>{{ item.end_time }}</td>
+                    <td>{{ item.min_level }}</td>
+                    <td>{{ item.max_level }}</td>
+
+                </tr>
+            {% endfor %}
+        </table>
+        </p>
+    {% endif %}
+{% endblock %}
