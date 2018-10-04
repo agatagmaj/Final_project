@@ -1,70 +1,82 @@
 {% extends 'smartdiabetes/base.html' %}
 
 {% block content %}
-    <h2>{{ msg }}</h2>
-    {% if user.is_authenticated %}
-        <h2>Dane użytkownika {{ user }}</h2>
-        Imię: {{ user.first_name }}<br>
-        Nazwisko: {{ user.last_name }}<br>
-        Email: {{ user.email }}<br>
-        Adres: {{ user.address_city }}, {{ user.address_street }} {{ user.address_no }}<br>
-        Płeć: {{ user.get_sex_display }}<br>
-        <a class="btn btn-outline-secondary btn-sm" href="{% url 'update-profile' %}" role="button">Modyfikuj</a><br>
-        <a href="{% url 'update-action' %}">Długość działania insuliny: </a>{{ insulin_action.insulin_in_action }}
+    <div class="row">
+        <div class="col mt-3 mb-3">
+            <h2>Dane użytkownika {{ user }}</h2>
+        </div>
+        <div class="col mt-3 mb-3">
+             <h2>Ustawienia kalkulatora</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'update-profile' %}"
+               role="button">Modyfikuj</a><br>
+            {{ user.email }}
+            <br><br>
+            <i><u>Adres</u></i><br>{{ user.address_city }}<br> {{ user.address_street }} {{ user.address_no }}<br>
+        </div>
+        <div class="col">
+            <h4 class="text-center" >Przelicznik <a class="btn btn-outline-secondary btn-sm float-sm-right" href="{% url 'update-ratio' %}">Modyfikuj</a>
+            </h4>
 
-        <p>
-        <h3>Przelicznik <a class="btn btn-outline-secondary btn-sm" href="{% url 'update-ratio' %}">Modyfikuj</a></h3>
-
-        <table>
-            <tr>
-                <th colspan="2">Przedział czasu</th>
-                <th>Przelicznik</th>
-            </tr>
-            {% for item in insulin_ration %}
+            <table class="table table-sm text-center">
                 <tr>
-                    <td>{{ item.start_time }}</td>
-                    <td>{{ item.end_time }}</td>
-                    <td>{{ item.insulin_ratio }}</td>
+                    <th class="text-center align-middle" scope="col" colspan="2" style="width: 50%">Przedział czasu</th>
+                    <th class="text-center align-middle" scope="col" style="width: 50%">Jednostek insuliny<br> na wymiennik</th>
                 </tr>
-            {% endfor %}
-        </table>
-        </p>
+                {% for item in insulin_ration %}
+                    <tr>
+                        <td class="text-center">{{ item.start_time }}</td>
+                        <td class="text-center">{{ item.end_time }}</td>
+                        <td class="text-center">{{ item.insulin_ratio }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
 
-        <p>
-        <h3>Wrażliwość <a class="btn btn-outline-secondary btn-sm" href="{% url 'update-sensitivity' %}">Modyfikuj</a></h3>
-        <table>
-            <tr>
-                <th colspan="2">Przedział czasu</th>
-                <th>Wrażliwość</th>
-            </tr>
-            {% for item in insulin_sensitivity %}
+            <h4 class="text-center">Wrażliwość <a class="btn btn-outline-secondary btn-sm float-sm-right"
+                              href="{% url 'update-sensitivity' %}">Modyfikuj</a>
+            </h4>
+            <table class="table table-sm text-center">
                 <tr>
-                    <td>{{ item.start_time }}</td>
-                    <td>{{ item.end_time }}</td>
-                    <td>{{ item.insulin_sensitivity }}</td>
+                    <th class="text-center align-middle" scope="col" colspan="2" style="width: 50%">Przedział czasu</th>
+                    <th class="text-center align-middle" scope="col" style="width: 50%">Wrażliwość na<br> jednostkę insuliny</th>
                 </tr>
-            {% endfor %}
-        </table>
-        </p>
+                {% for item in insulin_sensitivity %}
+                    <tr>
+                        <td>{{ item.start_time }}</td>
+                        <td>{{ item.end_time }}</td>
+                        <td>{{ item.insulin_sensitivity }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
 
-        <p>
-        <h3>Zakres docelowy <a class="btn btn-outline-secondary btn-sm" href="{% url 'update-targets' %}">Modyfikuj</a></h3>
-        <table>
-            <tr>
-                <th colspan="2">Przedział czasu</th>
-                <th colspan="2">Docelowa glikemia</th>
-
-            </tr>
-            {% for item in targeted_levels %}
+            <h4 class="text-center">Zakres docelowy <a class="btn btn-outline-secondary btn-sm float-sm-right"
+                                   href="{% url 'update-targets' %}">Modyfikuj</a>
+            </h4>
+            <table class="table table-sm text-center">
                 <tr>
-                    <td>{{ item.start_time }}</td>
-                    <td>{{ item.end_time }}</td>
-                    <td>{{ item.min_level }}</td>
-                    <td>{{ item.max_level }}</td>
+                    <th class="text-center align-middle" scope="col" colspan="2" style="width: 50%">Przedział czasu</th>
+                    <th class="text-center align-middle" scope="col" colspan="2" style="width: 50%">Docelowa glikemia</th>
 
                 </tr>
-            {% endfor %}
-        </table>
-        </p>
-    {% endif %}
+                {% for item in targeted_levels %}
+                    <tr>
+                        <td>{{ item.start_time }}</td>
+                        <td>{{ item.end_time }}</td>
+                        <td>{{ item.min_level }}</td>
+                        <td>{{ item.max_level }}</td>
+
+                    </tr>
+                {% endfor %}
+            </table>
+             <h4>Długość działania insuliny <small class="text-muted">w godzinach</small>  {{ insulin_action.insulin_in_action }}
+                 <a class="btn btn-outline-secondary btn-sm float-sm-right"
+                                   href="{% url 'update-action' %}">Modyfikuj</a>
+            </h4>
+        </div>
+    </div>
+    {#    {% endif %}#}
 {% endblock %}

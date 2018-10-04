@@ -1,11 +1,14 @@
 {% extends 'smartdiabetes/base.html' %}
 
 {% block content %}
-        <h2>Dodaj posiłek do menu</h2>
-    <form method="POST">
-            <p><strong><i>Podaj ilość węglowodanów, białka i tłuszczy w posiłku lub wyliczone wymienniki</i></strong></p>
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Dalej</button>
-    </form>
+    <div class="d-flex justify-content-center">
+        <form method="POST">
+            <h2>Dodaj posiłek do menu</h2>
+            <p><strong><i>Podaj ilość węglowodanów, białka i tłuszczy w posiłku lub wyliczone wymienniki</i></strong>
+            </p>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Dalej</button>
+        </form>
+    </div>
 {% endblock %}
