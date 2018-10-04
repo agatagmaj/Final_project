@@ -1,0 +1,28 @@
+{% extends 'smartdiabetes/base.html' %}
+{% block title %}
+    <title>Dawka</title>
+{% endblock %}
+
+{% block content %}
+    <h3>Proponowana dawka na posiłek</h3>
+    <p>
+        {#    <h4>{{ item.name }}</h4>#}
+        <div class="container-fluid">
+            {% if insulin_for_correction %}
+                Korekta: {{ insulin_for_correction }}<br>
+                Bolus podstawowy na posiłek: {{ insulin_for_ww }}<br>
+            {% endif %}
+    <p><strong>Proponowany bolus podstawowy: {{ bolus }}<br>
+        {% if insulin_for_wbt > 0 %}
+            Proponowany bolus przedłużony: {{ insulin_for_wbt }}<br>
+            Czas bolusa przedłużonego: {{ time_for_wbt }}
+        {% endif %}
+    </strong></p>
+        <form action="{%  url 'meal-record' %}" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">OK</button>
+    </form>
+    </div>
+    </p>
+{% endblock %}

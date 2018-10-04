@@ -1,0 +1,15 @@
+{% extends 'smartdiabetes/base.html' %}
+
+{% block content %}
+    {% if head %}
+        <h2>{{ head }}</h2>
+    {% endif %}
+    <form method="POST">
+        {% if help_text %}
+            <p><strong><i>{{ help_text }}</i></strong></p>
+        {% endif %}
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Dalej</button>
+    </form>
+{% endblock %}

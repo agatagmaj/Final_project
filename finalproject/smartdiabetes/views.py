@@ -1,14 +1,18 @@
+import os
+import time
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.utils.timezone import localtime
 from django.views import View
 from django.views.generic import UpdateView, CreateView, ListView, DetailView
 from smartdiabetes.forms import UserCreationForm2, ProfileForm, RatioForm, SensitivityForm, TargetedLevelsForm, \
-    InsulinActionForm, AddMenuForm, CalculateMealForm
-from smartdiabetes.models import InsulinRatio, InsulinSensitivity, InsulinAction, TargetedLevels, User, Menu
+    InsulinActionForm, AddMenuForm, CalculateMealForm, CalculateCorrectionForm, IfMealForm, AddGlucoseLevelForm
+from smartdiabetes.models import InsulinRatio, InsulinSensitivity, InsulinAction, TargetedLevels, User, Menu, \
+    BloodGlucoseResults, Meals, InsulinInjections
 
 
 class HomeView(View):
@@ -24,6 +28,7 @@ class HomeView(View):
             insulin_action = InsulinAction.objects.get(user=request.user)
             targeted_levels = TargetedLevels.objects.filter(user=request.user)
             return render(request, 'smartdiabetes/user_home.html', locals())
+
 
 class SignUpView(View):
     def get(self, request):
@@ -48,10 +53,10 @@ class SignUpView(View):
                        })
 
 
-class ProfileView(LoginRequiredMixin,View):
+class ProfileView(LoginRequiredMixin, View):
     def get(self, request):
         form = ProfileForm(instance=request.user)
-        return render(request, 'smartdiabetes/signup.html',
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Podstawowe informacje"})
 
@@ -60,12 +65,13 @@ class ProfileView(LoginRequiredMixin,View):
         if form.is_valid():
             form.save()
             return redirect('insulin-ratio')
-        return render(request, 'smartdiabetes/signup.html',
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Podstawowe informacje"
                        })
 
 
+# todo założenie, że przelicznik dla ww i wbt jest taki sam - do poprawy
 class RatioView(LoginRequiredMixin, View):
     def get(self, request):
         if request.session.get('last_end_time'):
@@ -73,7 +79,7 @@ class RatioView(LoginRequiredMixin, View):
         else:
             new_start_time = 0
         form = RatioForm(initial={'start_time': new_start_time})
-        return render(request, 'smartdiabetes/signup.html',
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Przelicznik",
                        "help_text": 'Podaj ilość insuliny na jeden wymiennik'
@@ -90,18 +96,19 @@ class RatioView(LoginRequiredMixin, View):
             ratio.user = request.user
             ratio.save()
             if form.cleaned_data['end_time'] == 24:
-                if InsulinSensitivity.objects.filter(user = request.user).exists():
+                if InsulinSensitivity.objects.filter(user=request.user).exists():
                     return redirect('home')
                 else:
                     return redirect('insulin-sensitivity')
             else:
                 request.session['last_end_time'] = form.cleaned_data['end_time']
                 return redirect('insulin-ratio')
-        return render(request, 'smartdiabetes/signup.html',
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Przelicznik",
                        "help_text": 'Podaj ilość insuliny na jeden WW'
                        })
+
 
 class SensitivityView(LoginRequiredMixin, View):
     def get(self, request):
@@ -110,7 +117,7 @@ class SensitivityView(LoginRequiredMixin, View):
         else:
             new_start_time = 0
         form = SensitivityForm(initial={'start_time': new_start_time})
-        return render(request, 'smartdiabetes/signup.html',
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Wrażliwość",
                        "help_text": 'Podaj wrażliwość na jednostkę insuliny'
@@ -127,18 +134,19 @@ class SensitivityView(LoginRequiredMixin, View):
             sensitivity.user = request.user
             sensitivity.save()
             if form.cleaned_data['end_time'] == 24:
-                if TargetedLevels.objects.filter(user = request.user).exists():
+                if TargetedLevels.objects.filter(user=request.user).exists():
                     return redirect('home')
                 else:
                     return redirect('target-level')
             else:
                 request.session['sens_end_time'] = form.cleaned_data['end_time']
                 return redirect('insulin-sensitivity')
-        return render(request, 'smartdiabetes/signup.html',
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Wrażliwość",
                        "help_text": 'Podaj wrażliwość na jednostkę insuliny'
                        })
+
 
 class TargetedView(LoginRequiredMixin, View):
     def get(self, request):
@@ -147,7 +155,7 @@ class TargetedView(LoginRequiredMixin, View):
         else:
             new_start_time = 0
         form = TargetedLevelsForm(initial={'start_time': new_start_time})
-        return render(request, 'smartdiabetes/signup.html',
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Poziom docelowy",
                        "help_text": 'Podaj zakres docelowy glikemii, '
@@ -165,24 +173,25 @@ class TargetedView(LoginRequiredMixin, View):
             sensitivity.user = request.user
             sensitivity.save()
             if form.cleaned_data['end_time'] == 24:
-                if InsulinAction.objects.filter(user = request.user).exists():
+                if InsulinAction.objects.filter(user=request.user).exists():
                     return redirect('home')
                 else:
                     return redirect('insulin-action')
             else:
                 request.session['targ_end_time'] = form.cleaned_data['end_time']
                 return redirect('target-level')
-        return render(request, 'smartdiabetes/signup.html',
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Poziom docelowy",
                        "help_text": 'Podaj zakres docelowy glikemii, '
                                     'wartość nie może być niższa niż 70 i wyższa niż 180',
                        })
 
-class InsulinActionView(LoginRequiredMixin,View):
+
+class InsulinActionView(LoginRequiredMixin, View):
     def get(self, request):
         form = InsulinActionForm()
-        return render(request, 'smartdiabetes/signup.html',
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Długość działania insuliny",
                        "help_text": 'Podaj długość działania w godzinach'
@@ -195,46 +204,50 @@ class InsulinActionView(LoginRequiredMixin,View):
             insulin_action.user = request.user
             insulin_action.save()
             return redirect('home')
-        return render(request, 'smartdiabetes/signup.html',
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Długość działania insuliny",
                        "help_text": 'Podaj długość działania w godzinach'
                        })
 
+
 class UpdateRatioView(LoginRequiredMixin, View):
     def get(self, request):
-        InsulinRatio.objects.filter(user = request.user).delete()
+        InsulinRatio.objects.filter(user=request.user).delete()
         request.session['last_end_time'] = 0
         return redirect('insulin-ratio')
 
+
 class UpdateSensitivityView(LoginRequiredMixin, View):
     def get(self, request):
-        InsulinSensitivity.objects.filter(user = request.user).delete()
+        InsulinSensitivity.objects.filter(user=request.user).delete()
         request.session['sens_end_time'] = 0
         return redirect('insulin-sensitivity')
 
+
 class UpdateTargetedView(LoginRequiredMixin, View):
     def get(self, request):
-        TargetedLevels.objects.filter(user = request.user).delete()
+        TargetedLevels.objects.filter(user=request.user).delete()
         request.session['targ_end_time'] = 0
         return redirect('target-level')
+
 
 class UpdateInsulinActionView(LoginRequiredMixin, View):
     def get(self, request):
         InsulinAction.objects.filter(user=request.user).delete()
         return redirect('insulin-action')
 
-class UpdateProfileView(UpdateView):
+class UpdateProfileView(LoginRequiredMixin, UpdateView):
     model = User
     fields = ['first_name', 'last_name', 'email', 'address_city', 'address_street', 'address_no', 'sex']
-    template_name = 'smartdiabetes/signup.html'
+    template_name = 'smartdiabetes/form.html'
     success_url = reverse_lazy('home')
-
 
     def get_object(self, queryset=None):
         return self.request.user
 
-class AddMenuView(CreateView):
+
+class AddMenuView(LoginRequiredMixin, CreateView):
     form_class = AddMenuForm
     model = Menu
     success_url = reverse_lazy('menu')
@@ -245,21 +258,165 @@ class AddMenuView(CreateView):
         self.object.save()
         return redirect(self.get_success_url())
 
-class MenuView(ListView):
+
+class MenuView(LoginRequiredMixin, ListView):
     template_name = 'smartdiabetes/menu_food.html'
     context_object_name = 'menu'
 
     def get_queryset(self):
-        return Menu.objects.filter(user = self.request.user)
+        return Menu.objects.filter(user=self.request.user)
 
-class CalculateMealView(View):
+
+# todo czy podano i jeśli tak to zapisać w wynikach
+# todo info kiedy należy zmierzyć cukier
+class CalculateMealView(LoginRequiredMixin, View):
     def get(self, request):
         form = CalculateMealForm()
-        form.fields['meal'].queryset = Menu.objects.filter(user = request.user)
-        return render(request, 'smartdiabetes/signup.html',
+        form.fields['meal'].queryset = Menu.objects.filter(user=request.user)
+        return render(request, 'smartdiabetes/form.html',
+                      {"form": form,
+                       "head": "Wyliczenie dawki",
+                       "help_text": 'Podaj ilość wymienników lub wybierz posiłek z listy'
+                       })
+
+    def post(self, request):
+        form = CalculateMealForm(request.POST)
+        if form.is_valid():
+            ww = form.cleaned_data['ww']
+            wbt = form.cleaned_data['wbt']
+            glycemia = form.cleaned_data['glycemia']
+            os.environ['TZ'] = 'Poland'
+            time.tzset()
+            actual_hour = time.strftime("%H")
+            insulin_ratio = InsulinRatio.objects.filter(user=request.user).filter(start_time__lte=actual_hour).filter(
+                end_time__gt=actual_hour)
+            insulin_sensitivity = InsulinSensitivity.objects.filter(user=request.user).filter(
+                start_time__lte=actual_hour).filter(
+                end_time__gt=actual_hour)
+            insulin_sensitivity = insulin_sensitivity[0].insulin_sensitivity
+            targeted_levels = TargetedLevels.objects.filter(user=request.user).filter(
+                start_time__lte=actual_hour).filter(
+                end_time__gt=actual_hour)
+            min = targeted_levels[0].min_level
+            max = targeted_levels[0].max_level
+            optimal_level = (max + min) / 2
+            insulin_for_ww = float(insulin_ratio[0].insulin_ratio) * ww
+            insulin_for_wbt = float(insulin_ratio[0].insulin_ratio) * wbt
+            time_for_wbt = insulin_for_wbt + 2
+            if glycemia > max:
+                insulin_for_correction = (glycemia - optimal_level) / insulin_sensitivity
+                bolus = insulin_for_correction + insulin_for_ww
+            else:
+                bolus = insulin_for_ww
+            # todo dodać zaokrąglanie do 0,5
+            # todo zastanowić się jak uzwględnić insulin in action
+            # insulin_action = InsulinAction.objects.get(user=request.user)
+            request.session['glucose'] = glycemia
+            request.session['ww'] = ww
+            request.session['wbt'] = wbt
+            # todo zmienić, bo ograniczenie że nie ma podziału na bolus pod, roz i korekte
+            request.session['insulin_dose'] = bolus + insulin_for_wbt
+            form = IfMealForm()
+            return render(request, 'smartdiabetes/insulin.html', locals())
+        return render(request, 'smartdiabetes/form.html',
                       {"form": form,
                        "head": "Wyliczenie posiłku",
                        "help_text": 'Podaj ilość wymienników lub wybierz posiłek z listy'
                        })
 
+
+class CalculateCorrectionView(LoginRequiredMixin, View):
+    def get(self, request):
+        form = CalculateCorrectionForm()
+        return render(request, 'smartdiabetes/form.html',
+                      {"form": form,
+                       "head": "Wyliczenie korekty",
+                       })
+
+    def post(self, request):
+        form = CalculateCorrectionForm(request.POST)
+        if form.is_valid():
+            glycemia = form.cleaned_data['glycemia']
+            os.environ['TZ'] = 'Poland'
+            time.tzset()
+            actual_hour = time.strftime("%H")
+            insulin_sensitivity = InsulinSensitivity.objects.filter(user=request.user).filter(
+                start_time__lt=actual_hour).filter(
+                end_time__gt=actual_hour)
+            insulin_sensitivity = insulin_sensitivity[0].insulin_sensitivity
+            targeted_levels = TargetedLevels.objects.filter(user=request.user).filter(
+                start_time__lt=actual_hour).filter(
+                end_time__gt=actual_hour)
+            min = targeted_levels[0].min_level
+            max = targeted_levels[0].max_level
+            optimal_level = (max + min) / 2
+            if glycemia > max:
+                correction = glycemia - optimal_level
+                correction = correction / insulin_sensitivity
+                form = IfMealForm()
+                ctx = {
+                    "correction": correction,
+                    "form": form,
+                }
+                request.session['glucose'] = glycemia
+                # todo zmienić, bo ograniczenie że nie ma podziału na bolus pod, roz i korekte
+                request.session['insulin_dose'] = correction
+                return render(request, 'smartdiabetes/correction.html', ctx)
+            elif glycemia < min:
+                ctx = {"warning": "Masz za niski poziom cukru - Zjedz coś!"}
+                return render(request, 'smartdiabetes/correction.html', ctx)
+            else:
+                ctx = {"msg": "Twój poziom cukru jest prawidłowy"}
+                return render(request, 'smartdiabetes/correction.html', ctx)
+
+
+class AddRecordView(LoginRequiredMixin, View):
+    def post(self, request):
+        form = IfMealForm(request.POST)
+        if form.is_valid():
+            if 'glucose' in request.session:
+                glucose = request.session['glucose']
+            glucose_result = BloodGlucoseResults.objects.create(user=request.user, glucose=glucose)
+            insulin = form.cleaned_data['insulin']
+            if insulin:
+                if 'ww' in request.session and 'wbt' in request.session:
+                    ww = request.session['ww']
+                    wbt = request.session['wbt']
+                    meal = Meals.objects.create(user=request.user, glucose=glucose_result, ww=ww, wbt=wbt)
+                    del request.session['ww']
+                    del request.session['wbt']
+                if 'insulin_dose' in request.session:
+                    insulin_dose = request.session['insulin_dose']
+                    if 'meal' in locals():
+                        InsulinInjections.objects.create(user=request.user, glucose=glucose_result, meal=meal,
+                                                         correction=0,
+                                                         insulin_dose=insulin_dose)
+                    else:
+                        InsulinInjections.objects.create(user=request.user, glucose=glucose_result, correction=1,
+                                                         insulin_dose=insulin_dose)
+            else:
+                if 'ww' in request.session and 'wbt' in request.session:
+                    del request.session['ww']
+                    del request.session['wbt']
+        # todo docelowo ma przekierować na stronę z wynikami gdy zapisało
+        return redirect("home")
+
+
+class AddGlucoseLevelView(LoginRequiredMixin, CreateView):
+    form_class = AddGlucoseLevelForm
+    model = BloodGlucoseResults
+    template_name = 'smartdiabetes/form.html'
+    success_url = reverse_lazy('home')
+
+    def get_context_data(self, **kwargs):
+        ctx = super(AddGlucoseLevelView, self).get_context_data(**kwargs)
+        ctx['head'] = "Podaj poziom cukru"
+        return ctx
+
+# todo docelowo przekierować na statystyki
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.save()
+        return redirect(self.get_success_url())
 

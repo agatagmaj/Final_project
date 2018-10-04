@@ -61,7 +61,6 @@ class Menu(models.Model):
         return f"{self.name}"
 
 
-
 class TemporaryMenu(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=128, unique=True, verbose_name="Nazwa posiłku")
@@ -72,9 +71,24 @@ class TemporaryMenu(models.Model):
     wbt = models.FloatField(blank=True, verbose_name="WBT")
 
 
-# todo zmienić nazwę modelu na BloodGlucoseResults
-# todo dodać model dla posiłków i podawanej insuliny
-class InsulinResults(models.Model):
+class BloodGlucoseResults(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    insulin_level = models.IntegerField()
-    time = models.IntegerField()
+    glucose = models.IntegerField(verbose_name="Podaj glikemie")
+    time = models.DateTimeField(auto_now_add=True)
+
+
+class Meals(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    glucose = models.ForeignKey(BloodGlucoseResults, on_delete=models.CASCADE)
+    ww = models.FloatField(blank=True, verbose_name="WW")
+    wbt = models.FloatField(blank=True, verbose_name="WBT")
+    time = models.DateTimeField(auto_now_add=True)
+
+
+class InsulinInjections(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    glucose = models.ForeignKey(BloodGlucoseResults, on_delete=models.CASCADE)
+    meal = models.ForeignKey(Meals, on_delete=models.CASCADE, blank=True, null=True)
+    correction = models.BooleanField(default=0)
+    insulin_dose = models.FloatField(verbose_name="Dawka insuliny")
+    time = models.DateTimeField(auto_now_add=True)

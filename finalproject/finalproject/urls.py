@@ -19,7 +19,8 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from smartdiabetes.views import SignUpView, ProfileView, RatioView, HomeView, SensitivityView, TargetedView, \
     InsulinActionView, UpdateRatioView, UpdateSensitivityView, UpdateTargetedView, UpdateInsulinActionView, \
-    UpdateProfileView, AddMenuView, MenuView, CalculateMealView
+    UpdateProfileView, AddMenuView, MenuView, CalculateMealView, CalculateCorrectionView, AddRecordView, \
+    AddGlucoseLevelView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -40,5 +41,8 @@ urlpatterns = [
     url(r'^add_menu$', AddMenuView.as_view(), name='add-menu'),
     url(r'^menu$', MenuView.as_view(), name='menu'),
     url(r'^calculate_meal$', CalculateMealView.as_view(), name='calculate-meal'),
+    url(r'^calculate_correction$', CalculateCorrectionView.as_view(), name='calculate-correction'),
+    url(r'^add_meal_record$', AddRecordView.as_view(), name='meal-record'),
+    url(r'^add_glucose$', AddGlucoseLevelView.as_view(), name='add-glucose'),
 
 ]

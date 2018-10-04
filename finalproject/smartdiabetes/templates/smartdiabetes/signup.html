@@ -5,11 +5,20 @@
         <h2>{{ head }}</h2>
     {% endif %}
     <form method="POST">
+        {% csrf_token %}
         {% if help_text %}
             <p><strong><i>{{ help_text }}</i></strong></p>
         {% endif %}
-        {% csrf_token %}
-        {{ form.as_p }}
+
+        {% for field in form %}
+            <p>
+                {{ field.label_tag }}<br>
+                <span data-toggle="tooltip" title="{{ field.help_text }}">{{ field }}</span>
+                {% for error in field.errors %}
+                    <p style="color: red">{{ error }}</p>
+                {% endfor %}
+            </p>
+        {% endfor %}
         <button type="submit">Dalej</button>
     </form>
 {% endblock %}

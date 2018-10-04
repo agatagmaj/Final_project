@@ -1,0 +1,29 @@
+</html>{% extends 'smartdiabetes/base.html' %}
+{% block title %}
+    <title>Korekta</title>
+{% endblock %}
+
+{% block content %}
+    <h3>Proponowana korekta</h3>
+    <p>
+        {#    <h4>{{ item.name }}</h4>#}
+    <div class="container-fluid">
+        {% if correction %}
+            Proponowana korekta: {{ correction }}
+            <form action="{%  url 'meal-record' %}" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">OK</button>
+    </form>
+        {% endif %}
+        {% if msg %}
+            <i class="material-icons md-48 md-green" style="vertical-align: middle;">sentiment_satisfied_alt</i>
+            {{ msg }}
+        {% endif %}
+        {% if warning %}
+            <i class="material-icons md-48 md-red" style="vertical-align: middle;">warning</i>
+            <span class="pb-3">{{ warning }}</span>
+        {% endif %}
+    </div>
+    </p>
+{% endblock %}
