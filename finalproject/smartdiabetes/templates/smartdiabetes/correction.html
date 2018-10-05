@@ -4,11 +4,13 @@
 {% endblock %}
 
 {% block content %}
-    <h3>Proponowana korekta</h3>
+        <div class="d-flex justify-content-center mt-5">
+     <div class="">
+   <h3>Proponowana korekta</h3>
     <p>
         {#    <h4>{{ item.name }}</h4>#}
-    <div class="container-fluid">
         {% if correction %}
+            <i class="material-icons md-48 md-yellow" style="vertical-align: middle;">error</i>
             Proponowana korekta: {{ correction }}
             <form action="{%  url 'meal-record' %}" method="POST">
         {% csrf_token %}
@@ -24,6 +26,7 @@
             <i class="material-icons md-48 md-red" style="vertical-align: middle;">warning</i>
             <span class="pb-3">{{ warning }}</span>
         {% endif %}
+    </div>
     </div>
     </p>
 {% endblock %}

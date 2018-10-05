@@ -1,11 +1,12 @@
 {% extends 'smartdiabetes/base.html' %}
 
 {% block content %}
-    <div class="d-flex justify-content-center">
-       <form method="POST">
-        {% if head %}
-            <h2>{{ head }}</h2>
-        {% endif %}
+    {#    <div class="row justify-content-center align-self-center w-100">#}
+    <div class="d-flex justify-content-center mt-5">
+        <form method="POST">
+            {% if head %}
+                <h2>{{ head }}</h2>
+            {% endif %}
             {% if help_text %}
                 <p><strong><i>{{ help_text }}</i></strong></p>
             {% endif %}

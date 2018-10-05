@@ -4,23 +4,23 @@
 {% endblock %}
 
 {% block content %}
-    <h3>Twoje posiłki</h3>
-    {% for item in menu %}
-        <p>
-        <h4>{{ item.name }}</h4>
-        <div class="container-fluid">
-            {% if item.carbo_grams is not None %}
-                Węglowodany: {{ item.carbo_grams }}<br>
-            {% endif %}
-            {% if item.protein_grams is not None %}
-                Białka: {{ item.protein_grams }}<br>
-            {% endif %}
-            {% if item.fat_grams is not None %}
-                Tłuszcze: {{ item.fat_grams }}<br>
-            {% endif %}
-            WW: {{ item.ww }}<br>
-            WBT: {{ item.wbt }}<br>
-        </div>
-        </p>
-    {% endfor %}
+    <div class="container">
+        <h3 class="mt-4">Twoje posiłki</h3>
+        {% for item in menu %}
+            <h4 class="ml-3">{{ item.name }}</h4>
+            <div class="container-fluid mb-3 ml-3">
+                {% if item.carbo_grams is not None %}
+                    Węglowodany: {{ item.carbo_grams }}<br>
+                {% endif %}
+                {% if item.protein_grams is not None %}
+                    Białka: {{ item.protein_grams }}<br>
+                {% endif %}
+                {% if item.fat_grams is not None %}
+                    Tłuszcze: {{ item.fat_grams }}<br>
+                {% endif %}
+                WW: {{ item.ww }}<br>
+                WBT: {{ item.wbt }}<br>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

@@ -1,5 +1,7 @@
 import os
 import time
+from datetime import datetime, timedelta
+
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import AnonymousUser
@@ -9,10 +11,13 @@ from django.urls import reverse_lazy
 from django.utils.timezone import localtime
 from django.views import View
 from django.views.generic import UpdateView, CreateView, ListView, DetailView
+from pygal.style import Style
+
 from smartdiabetes.forms import UserCreationForm2, ProfileForm, RatioForm, SensitivityForm, TargetedLevelsForm, \
     InsulinActionForm, AddMenuForm, CalculateMealForm, CalculateCorrectionForm, IfMealForm, AddGlucoseLevelForm
 from smartdiabetes.models import InsulinRatio, InsulinSensitivity, InsulinAction, TargetedLevels, User, Menu, \
     BloodGlucoseResults, Meals, InsulinInjections
+from pygal import Bar, DateTimeLine
 
 
 class HomeView(View):
@@ -237,6 +242,7 @@ class UpdateInsulinActionView(LoginRequiredMixin, View):
         InsulinAction.objects.filter(user=request.user).delete()
         return redirect('insulin-action')
 
+
 class UpdateProfileView(LoginRequiredMixin, UpdateView):
     model = User
     fields = ['first_name', 'last_name', 'email', 'address_city', 'address_street', 'address_no', 'sex']
@@ -393,12 +399,12 @@ class AddRecordView(LoginRequiredMixin, View):
                                                          insulin_dose=insulin_dose)
                     else:
                         InsulinInjections.objects.create(user=request.user, glucose=glucose_result, correction=1,
-                                                         insulin_dose=insulin_dose)
+                                                             insulin_dose=insulin_dose)
+                    return redirect("stat")
             else:
                 if 'ww' in request.session and 'wbt' in request.session:
                     del request.session['ww']
                     del request.session['wbt']
-        # todo docelowo ma przekierować na stronę z wynikami gdy zapisało
         return redirect("home")
 
 
@@ -406,17 +412,55 @@ class AddGlucoseLevelView(LoginRequiredMixin, CreateView):
     form_class = AddGlucoseLevelForm
     model = BloodGlucoseResults
     template_name = 'smartdiabetes/form.html'
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('stat')
 
     def get_context_data(self, **kwargs):
         ctx = super(AddGlucoseLevelView, self).get_context_data(**kwargs)
         ctx['head'] = "Podaj poziom cukru"
         return ctx
 
-# todo docelowo przekierować na statystyki
     def form_valid(self, form):
         self.object = form.save(commit=False)
         self.object.user = self.request.user
         self.object.save()
         return redirect(self.get_success_url())
 
+
+class StatView(View):
+    def get(self, request):
+        glucose = BloodGlucoseResults.objects.filter(user=request.user, time__lt=datetime.now(),
+                                                     time__gte=(datetime.now() - timedelta(hours=24)))
+
+        custom_style = Style(
+            background='transparent',
+            plot_background='transparent',
+            # foreground='#53E89B',
+            # foreground_strong='#53A0E8',
+            foreground_subtle='#FFD200',
+            opacity='.6',
+            opacity_hover='.9',
+            transition='400ms ease-in',
+            colors=('#FFD200', '#5B5B5B'))
+
+        chart = DateTimeLine(
+            height=600,
+            width=1000,
+            explicit_size=True,
+            style=custom_style,
+            show_legend=False
+        )
+
+        chart.add("Poziom cukru", [(item.time, item.glucose) for item in glucose])
+
+        rendered_chart = chart.render(unicode=True)
+        ctx = {}
+        print(rendered_chart)
+        ctx['chart'] = rendered_chart.decode("utf-8")
+
+        meals = Meals.objects.filter(user=request.user, time__lt=datetime.now(),
+                                                     time__gte=(datetime.now() - timedelta(hours=24)))
+        insulin_inj = InsulinInjections.objects.filter(user=request.user, time__lt=datetime.now(),
+                                     time__gte=(datetime.now() - timedelta(hours=24)))
+        ctx['meals']=meals
+        ctx['insulin_inj'] = insulin_inj
+        return render(request, 'smartdiabetes/stat.html', ctx)

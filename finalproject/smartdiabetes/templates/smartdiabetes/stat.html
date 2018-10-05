@@ -1,0 +1,66 @@
+{% extends 'smartdiabetes/base.html' %}
+{% block title %}
+    <title>Statystyki</title>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row align-self-center w-100">
+            <div class="col-sm">
+                <h2 class=" d-flex justify-content-center mt-4">Posiłki</h2>
+
+
+                <table class="table table-sm text-center">
+                    <tr>
+                        <th class="text-center align-middle" scope="col">Cukier<br>przed posiłkiem
+                        </th>
+                        <th class="text-center align-middle" scope="col">WW</th>
+                        <th class="text-center align-middle" scope="col">WBT</th>
+                        <th class="text-center align-middle" scope="col">Czas</th>
+                    </tr>
+                    {% for i in meals %}
+                        <tr>
+                            <td class="text-center">{{ i.glucose.glucose }}</td>
+                            <td class="text-center">{{ i.ww }}</td>
+                            <td class="text-center">{{ i.wbt }}</td>
+                            <td class="text-center">{{ i.time|date:"H:i" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="col-sm">
+                <h2 class=" d-flex justify-content-center mt-4">Poziom cukru w ciągu ostatniej doby</h2>
+                {{ chart|safe }}
+            </div>
+            <div class="col-sm">
+                <h2 class=" d-flex justify-content-center mt-4">Iniekcje insuliny</h2>
+
+
+                <table class="table table-sm text-center">
+                    <tr>
+                        <th class="text-center align-middle" scope="col">Cukier</th>
+                        <th class="text-center align-middle" scope="col">Posiłek</th>
+                        <th class="text-center align-middle" scope="col">Korekta</th>
+                        <th class="text-center align-middle" scope="col">Czas</th>
+                    </tr>
+                    {% for j in insulin_inj %}
+                        <tr>
+                            <td class="text-center">{{ j.glucose.glucose }}</td>
+                            <td class="text-center">
+                                {% if j.meal %}
+                                    <i class="material-icons md-18 md-dark" style="vertical-align: middle;">check</i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if j.correction == 1 %}
+                                    <i class="material-icons md-18 md-dark" style="vertical-align: middle;">check</i>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">{{ j.time|date:"H:i" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -76,7 +76,7 @@ class BloodGlucoseResults(models.Model):
     glucose = models.IntegerField(verbose_name="Podaj glikemie")
     time = models.DateTimeField(auto_now_add=True)
 
-
+# todo należy dodać relację do menu
 class Meals(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     glucose = models.ForeignKey(BloodGlucoseResults, on_delete=models.CASCADE)
