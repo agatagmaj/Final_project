@@ -28,7 +28,7 @@
         <i class="material-icons" style="vertical-align: middle;">person</i>Zalogowany jako: {{ request.user }}
         <a class="ml-3" href="{% url 'logout' %}">Wyloguj się</a>
     {% else %}
-        <a href="{% url 'login' %}">Zaloguj się </a> / <a href="{% url 'signup' %}">Rejestracja</a>
+        <a class="mr-3" href="{% url 'login' %}">Zaloguj się </a>/<a class="ml-3" href="{% url 'signup' %}">Rejestracja</a>
     {% endif %}
 
 </nav>

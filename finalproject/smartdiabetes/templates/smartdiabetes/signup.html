@@ -1,24 +1,30 @@
 {% extends 'smartdiabetes/base.html' %}
 
 {% block content %}
-    {% if head %}
-        <h2>{{ head }}</h2>
-    {% endif %}
-    <form method="POST">
-        {% csrf_token %}
-        {% if help_text %}
-            <p><strong><i>{{ help_text }}</i></strong></p>
-        {% endif %}
+    <form method="POST" action=" ">
+        <div class="container text-center">
 
-        {% for field in form %}
-            <p>
-                {{ field.label_tag }}<br>
-                <span data-toggle="tooltip" title="{{ field.help_text }}">{{ field }}</span>
-                {% for error in field.errors %}
-                    <p style="color: red">{{ error }}</p>
-                {% endfor %}
-            </p>
-        {% endfor %}
-        <button type="submit">Dalej</button>
+            {% csrf_token %}
+            <h2 class="mt-4">Zarejestruj się</h2>
+            <br>
+            {{ form.username.label }}
+            <br>
+            <span data-toggle="tooltip"
+                  title="Wymagana. 150 lub mniej znaków. Jedynie litery, cyfry i @/./+/-/_">{{ form.username }}</span>
+            <br><br>
+            {{ form.password1.label }}
+            <br>
+            <span data-toggle="tooltip"
+                  title="Twoje hasło nie może być zbyt podobne do twoich innych danych osobistych. Twoje hasło musi zawierać co najmniej 8 znaków. Twoje hasło nie może być powszechnie używanym hasłem. Twoje hasło nie może składać się tylko z cyfr.">{{ form.password1 }}</span>
+            <br><br>
+
+            {{ form.password2.label }}
+            <br>
+            <span data-toggle="tooltip"
+                  title="Wprowadź to samo hasło ponownie, dla weryfikacji.">{{ form.password2 }}</span>
+            <br>
+            <br>
+            <button type="submit" value="Dodaj"><i class="material-icons md-18 md-dark" style="vertical-align: middle;">lock_open</i> Dalej</button>
+        </div>
     </form>
 {% endblock %}

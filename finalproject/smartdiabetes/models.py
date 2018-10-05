@@ -50,7 +50,7 @@ class TargetedLevels(models.Model):
 
 class Menu(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=128, unique=True, verbose_name="Nazwa posiłku")
+    name = models.CharField(max_length=128, verbose_name="Nazwa posiłku")
     carbo_grams = models.IntegerField(verbose_name="Ile gram węglowodanów", blank=True, null=True)
     protein_grams = models.IntegerField(verbose_name="Ile gram białka", blank=True, null=True)
     fat_grams = models.IntegerField(verbose_name="Ile gram tłuszczy", blank=True, null=True)
@@ -59,6 +59,9 @@ class Menu(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+    class Meta:
+        unique_together = ('user', 'name')
 
 
 class TemporaryMenu(models.Model):

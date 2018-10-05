@@ -1,11 +1,9 @@
 import os
 import time
 from datetime import datetime, timedelta
-
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.timezone import localtime
@@ -21,7 +19,8 @@ from pygal import Bar, DateTimeLine
 
 
 class HomeView(View):
-    # todo wywalić błąd jeżeli wprowadzanie danych jest nieskończone
+    # todo dodać zdjęcie do strony logowania / rejestracji
+    # todo wywalić błąd jeżeli wprowadzanie danych jest nieskończone - on się wywala, ale trzeba się przed nim zabezpieczyć
     # czy istnieje jakikolwiek rekord kończący się na 24 w end_time
     def get(self, request):
         if isinstance(request.user, AnonymousUser):
@@ -426,7 +425,7 @@ class AddGlucoseLevelView(LoginRequiredMixin, CreateView):
         return redirect(self.get_success_url())
 
 
-class StatView(View):
+class StatView(LoginRequiredMixin, View):
     def get(self, request):
         glucose = BloodGlucoseResults.objects.filter(user=request.user, time__lt=datetime.now(),
                                                      time__gte=(datetime.now() - timedelta(hours=24)))
@@ -434,8 +433,6 @@ class StatView(View):
         custom_style = Style(
             background='transparent',
             plot_background='transparent',
-            # foreground='#53E89B',
-            # foreground_strong='#53A0E8',
             foreground_subtle='#FFD200',
             opacity='.6',
             opacity_hover='.9',
@@ -447,7 +444,8 @@ class StatView(View):
             width=1000,
             explicit_size=True,
             style=custom_style,
-            show_legend=False
+            show_legend=False,
+            x_value_formatter=lambda dt: dt.strftime("%H:%M")
         )
 
         chart.add("Poziom cukru", [(item.time, item.glucose) for item in glucose])

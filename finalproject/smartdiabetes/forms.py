@@ -1,20 +1,10 @@
 from django.contrib.auth import forms
-from django.utils.translation import gettext_lazy
-
 from smartdiabetes.models import User, InsulinRatio, InsulinSensitivity, TargetedLevels, InsulinAction, Menu, \
     BloodGlucoseResults
 from django import forms as forms2
 
 
 class UserCreationForm2(forms.UserCreationForm):
-    # password1 = forms2.CharField(
-    #     label=gettext_lazy("Password"),
-    #     strip=False,
-    #     widget=forms2.PasswordInput,
-    #     help_text="ekgfewkgfwh",
-    # )
-
-    # "Twoje hasło nie może być zbyt podobne do twoich innych danych osobistych.</li><li>Twoje hasło musi zawierać co najmniej 8 znaków.</li><li>Twoje hasło nie może być powszechnie używanym hasłem.</li><li>Twoje hasło nie może składać się tylko z cyfr.</li></ul>" > < input
 
     class Meta(forms.UserCreationForm.Meta):
         model = User
@@ -24,6 +14,12 @@ class ProfileForm(forms2.ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email', 'address_city', 'address_street', 'address_no', 'sex')
+
+    def __init__(self, *args, **kwargs):
+        super(ProfileForm, self).__init__(*args, **kwargs)
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+        self.fields['email'].required = True
 
 
 # todo dodać ograniczenie z jakiego przedziału może być ratio i sensitivity
