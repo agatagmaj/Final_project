@@ -220,7 +220,7 @@ class UpdateRatioView(LoginRequiredMixin, View):
         InsulinRatio.objects.filter(user=request.user).delete()
         request.session['last_end_time'] = 0
         return redirect('insulin-ratio')
-
+# todo znaleźć coś żeby pytać czy napewno zmodyfikować
 
 class UpdateSensitivityView(LoginRequiredMixin, View):
     def get(self, request):

@@ -1,17 +1,17 @@
 {% extends 'smartdiabetes/base.html' %}
 
 {% block title %}
-   <title>Login</title>
+    <title>Login</title>
 {% endblock %}
 
 {% block content %}
-            <div class="container text-center">
-  <form method="post">
-  <h2 class="mt-4">Logowanie</h2>
-      <br>
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Zaloguj się</button>
-  </form>
-            </div>
+    <div class="container text-center">
+        <form method="post">
+            <h2 class="mt-4">Logowanie</h2>
+            <br>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Zaloguj się</button>
+        </form>
+    </div>
 {% endblock %}

@@ -39,6 +39,7 @@
                 <table class="table table-sm text-center">
                     <tr>
                         <th class="text-center align-middle" scope="col">Cukier</th>
+                        <th class="text-center align-middle" scope="col">Insulina</th>
                         <th class="text-center align-middle" scope="col">Posiłek</th>
                         <th class="text-center align-middle" scope="col">Korekta</th>
                         <th class="text-center align-middle" scope="col">Czas</th>
@@ -46,6 +47,7 @@
                     {% for j in insulin_inj %}
                         <tr>
                             <td class="text-center">{{ j.glucose.glucose }}</td>
+                            <td class="text-center">{{ j.insulin_dose }}</td>
                             <td class="text-center">
                                 {% if j.meal %}
                                     <i class="material-icons md-18 md-dark" style="vertical-align: middle;">check</i>
